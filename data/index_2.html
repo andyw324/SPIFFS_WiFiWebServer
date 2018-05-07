@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html charset="UTF-8">
+  <head>
+    <meta name="viewport">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/superhero/bootstrap.min.css" rel="stylesheet" title="main">
+    <title>ABCD Smart Home Devices</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <h1>Smart Device [To get name from SPIFFS file?]</h1>
+      <ul class="nav nav-tabs" id="tab">
+        <li class="active"><a href="#tab_gpio" data-toggle="tab">GPIO</a></li>
+        <li><a href="#tab_configuration" data-toggle="tab">Configuration</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade" id="tab_gpio">
+          <h2>GPIO</h2>
+          <div class="row">
+            <div class="col-xs-6 col-md-4">
+              <h4 class="text-left">LED
+                <div class="span badge" id="LED_state">OFF</div>
+              </h4>
+            </div>
+            <div class="col-xs-6 col-md-4">
+              <div class="button btn btn-success btn-lg" id="LED_On" type="button">ON</div>
+            </div>
+            <div class="col-xs-6 col-md-4">
+              <div class="button btn btn-danger btn-lg" id="LED_Off" type="button">OFF</div>
+            </div>
+            <div class="col-xs-6 col-md-4">
+              <h4 class="text-left">RELAY
+                <div class="span badge" id="RELAY_state">OFF</div>
+              </h4>
+            </div>
+            <div class="col-xs-6 col-md-4">
+              <div class="button btn btn-success btn-lg" id="RELAY_On" type="button">ON</div>
+            </div>
+            <div class="col-xs-6 col-md-4">
+              <div class="button btn btn-danger btn-lg" id="RELAY_Off" type="button">OFF</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab_configuration">
+          <h2>Configuration        </h2>
+          <div class="btn-group">
+            <button class="btn btn-default" id="labelTheme">Theme</button>
+            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+            <ul class="dropdown-menu">
+              <li><a class="change-style-menu-item" href="#" rel="bootstrap">Boostrap</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="cerulean">Cerulean</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="cosmo">Cosmo</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="cyborg">Cyborg</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="darkly">Darkly</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="flatly">Flatly</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="journal">Journal</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="lumen">Lumen</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="paper">Paper</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="readable">Readable</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="sandstone">Sandstone</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="simplex">Simplex</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="slate">Slate</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="spacelab">Spacelab</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="superhero">Superhero</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="united">United</a></li>
+              <li><a class="change-style-menu-item" href="#" rel="yeti">Yeti  </a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="position:absolute; bottom:0; width:100%">
+        <div class="col-xs-2 col-md-2"><img src="img/power-cord.svg" width="30" height="30"></div>
+        <div class="col-xs-5 col-md-5">
+          <p><a href="http://www.projetsdiy.fr">Version francaise : www.projetsdiy.fr</a></p>
+        </div>
+        <div class="col-xs-5 col-md-5">
+          <p><a href="http://www.diyprojects.io">English version : www.diyprojects.io</a></p>
+        </div>
+      </div>
+    </div>
+    <script src="js/script.js"></script>
+    <script>
+      function labelFormatter(value, row){
+        //console.log("labelFormatter");
+        //console.log(value);
+        console.log(row);
+        var label = "";
+        if ( value === "Température" ) {
+          label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
+        } else if ( value === "Humidité" ) {
+          label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
+        } else if ( value === "Pression Atmosphérique" ) {
+          label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
+        } else {
+          label = value;
+        } 
+        return label;
+      }
+      function valueFormatter(value, row){
+        //console.log("valueFormatter");
+        var label = "";
+        if ( row.valeur > row.precedente ) {
+          label = value + row.unite + "<span class='glyphicon glyphicon-chevron-up pull-right'></span>";
+        } else { 
+          label = value + row.unite + "<span class='glyphicon glyphicon-chevron-down pull-right'></span>";
+        }
+        return label;
+      }
+      function vpFormatter(value, row){
+        //console.log("valueFormatter");
+        var label = "";
+        if ( row.valeur > row.precedente ) {
+          label = value + row.unite
+        } else { 
+          label = value + row.unite
+        }
+        return label;
+      }  
+      
+      $('#LED_On').click(function(){ setButton('LED','1'); });
+      $('#LED_Off').click(function(){ setButton('LED','0'); });
+      $('#RELAY_On').click(function(){ setButton('RELAY','1'); });
+      $('#RELAY_Off').click(function(){ setButton('RELAY','0'); });
+
+
+      function setButton(id, state){
+        $.post("gpio?id=" + id + "&state=" + state).done(function(data){
+        console.log("Return setButton " + JSON.stringify(data)); 
+        var id_gpio = "#" + id + "_state";
+        console.log(id_gpio);
+        if ( data.success === "1" ) {
+          if ( data.state === "1" ) {
+          $(id_gpio).html("ON");
+          } else {
+          $(id_gpio).html("OFF");
+          }  
+        } else {
+          $(id_gpio).html('!');
+        }      
+        }).fail(function(err){
+        console.log("err setButton " + JSON.stringify(err));
+        });
+      }
+		
+		
+      // Change current theme
+      // Adapted from : https://wdtz.org/bootswatch-theme-selector.html
+      var supports_storage = supports_html5_storage();
+      if (supports_storage) {
+        var theme = localStorage.theme;
+        if ( typeof theme != 'undefined' ) {
+          console.log("Recharge le theme " + theme);
+          set_theme(get_themeUrl(theme));
+        }
+      }
+      
+      // New theme selected
+      jQuery(function($){
+        $('body').on('click', '.change-style-menu-item', function() {
+          var theme_name = $(this).attr('rel');
+          console.log("Changement de theme " + theme_name);
+          var theme_url = get_themeUrl(theme_name);
+          console.log("URL theme : " + theme_url);
+          set_theme(theme_url);
+        });
+      });
+      // Get theme URL
+      function get_themeUrl(theme_name){
+        $('#labelTheme').html("Th&egrave;me : " + theme_name);
+        var url_theme = "";
+        if ( theme_name === "bootstrap" ) {
+          url_theme = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css";
+        } else {
+          url_theme = "https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/" + theme_name + "/bootstrap.min.css";
+        }
+        if (supports_storage) {
+          // Enregistre le theme sélectionné en local - save into the local database the selected theme
+          localStorage.theme = theme_name;
+        }
+        return url_theme;
+      }
+      // Apply theme
+      function set_theme(theme_url) {
+        $('link[title="main"]').attr('href', theme_url);
+      }
+      // local storage available ?
+      function supports_html5_storage(){
+        try {
+          return 'localStorage' in window && window['localStorage'] !== null;
+        } catch (e) {
+          return false;
+        }
+      }
+	  </script>
+  </body>
+</html>
