@@ -10,13 +10,13 @@
     <title>ABCD Smart Home Devices</title>
   </head>
   <body>
-    <div class="container-fluid" id="device_name">
+    <div class="container-fluid" id="mainAppDiv">
       <h1>Smart Device</h1>
       <ul class="nav nav-tabs" id="tab">
         <li class="active"><a href="#tab_gpio" data-toggle="tab">GPIO</a></li>
         <li><a href="#tab_configuration" data-toggle="tab">Configuration</a></li>
       </ul>
-      <div class="tab-content">
+      <div class="tab-content" id="tabContents">
         <div class="tab-pane fade in active" id="tab_gpio">
           <h2>GPIO</h2>
           <div class="row">
@@ -61,109 +61,83 @@
         </div>
         <div class="tab-pane fade" id="tab_configuration">
           <h2>Configuration        </h2>
-          <div class="btn-group">
-            <button class="btn btn-default" id="labelTheme">Theme</button>
-            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-            <ul class="dropdown-menu">
-              <li><a class="change-style-menu-item" href="#" rel="bootstrap">Boostrap</a></li>
-<!--
-              <li><a class="change-style-menu-item" href="#" rel="cerulean">Cerulean</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="cosmo">Cosmo</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="cyborg">Cyborg</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="darkly">Darkly</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="flatly">Flatly</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="journal">Journal</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="lumen">Lumen</a></li>
--->
-<!--
-              <li><a class="change-style-menu-item" href="#" rel="paper">Paper</a></li>
--->
-<!--
-              <li><a class="change-style-menu-item" href="#" rel="readable">Readable</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="sandstone">Sandstone</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="simplex">Simplex</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="slate">Slate</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="spacelab">Spacelab</a></li>
--->
-<!--
-              <li><a class="change-style-menu-item" href="#" rel="superhero">Superhero</a></li>
--->
-<!--
-              <li><a class="change-style-menu-item" href="#" rel="united">United</a></li>
-              <li><a class="change-style-menu-item" href="#" rel="yeti">Yeti  </a></li>
--->
-            </ul>
+          <div id="ap_mode">
+            <div class="form-group">
+              <label for="ssid">SSID:</label>
+              <input type="text" class="form-control" id="ssid" placeholder="SSID of WiFi - none set">
+            </div>
+            <div class="form-group">
+              <label for="pwd">Passphrase:</label>
+              <input type="password" class="form-control" id="pwd" placeholder="WiFi WEP / Passphrase">
+            </div>
+            <div class="form-group">
+              <label for="deviceName">Device Name for Alexa control:</label>
+              <input type="text" class="form-control" id="deviceName" placeholder="Name of device for Alexa">
+            </div>
+            <div class="button-group">
+              <input type="submit" class="btn btn-info" value="Submit" id="newConfigSettings">
+              <small id="submitButtonHelpInline" class="text-muted">
+                Clicking submit will restart the device
+              </small>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="ssid">SSID:</label>
-            <input type="text" class="form-control" id="ssid">
+          <div id="sta_mode">
+            <input type="submit" class="btn btn-info" value="Restart in AP Mode" id="setToAPMode">
+            <p id="submitButtonHelpInline">
+              Click to set device in AP mode to change configuration settings
+            </p>
           </div>
-          <div class="form-group">
-            <label for="pwd">Passphrase:</label>
-            <input type="password" class="form-control" id="pwd">
-          </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </div>
-      <div class="row" style="position:absolute; bottom:0; width:100%">
-        <div class="col-xs-2 col-md-2"><img src="img/power-cord.svg" width="30" height="30"></div>
-        <div class="col-xs-5 col-md-5">
-          <p><a href="http://www.projetsdiy.fr">Version francaise : www.projetsdiy.fr</a></p>
-        </div>
-        <div class="col-xs-5 col-md-5">
-          <p><a href="http://www.diyprojects.io">English version : www.diyprojects.io</a></p>
+<!--
+      <div id="modeChange">
+        <h2>Device mode changed</h2>
+        <p>Hello World</p>
+      </div>
+-->
+      <div class="row" style="position:absolute; bottom:10px; width:100%">
+        <div class="col-xs-2 col-md-2"><img src="img/power-cord.svg" width="40" height="40"></div>
+        <div class="col-xs-10 col-md-10">
+          <span>Created by Andrew Wong for the ABCD family</span>
         </div>
       </div>
     </div>
-<!--
-    <script src="js/script.js"></script>
--->
     <script>
-      //function labelFormatter(value, row){
-        ////console.log("labelFormatter");
-        ////console.log(value);
-        //console.log(row);
-        //var label = "";
-        //if ( value === "Température" ) {
-          //label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
-        //} else if ( value === "Humidité" ) {
-          //label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
-        //} else if ( value === "Pression Atmosphérique" ) {
-          //label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
-        //} else {
-          //label = value;
-        //} 
-        //return label;
-      //}
-      //function valueFormatter(value, row){
-        ////console.log("valueFormatter");
-        //var label = "";
-        //if ( row.valeur > row.precedente ) {
-          //label = value + row.unite + "<span class='glyphicon glyphicon-chevron-up pull-right'></span>";
-        //} else { 
-          //label = value + row.unite + "<span class='glyphicon glyphicon-chevron-down pull-right'></span>";
-        //}
-        //return label;
-      //}
-      //function vpFormatter(value, row){
-        ////console.log("valueFormatter");
-        //var label = "";
-        //if ( row.valeur > row.precedente ) {
-          //label = value + row.unite
-        //} else { 
-          //label = value + row.unite
-        //}
-        //return label;
-      //}  
       
-      $( document ).ready(function() { getDeviceName() });
-      //~ $("div#device_name h1").html("Test Device" + 345);
+      var ssid_val = "";
+      var pwd_val = "";
+      var deviceName_val = "";
+      
+      $( document ).ready(function() { 
+        getDeviceName();
+        showHideConfig("AP"); 
+        //~ document.getElementById("tabContents").style.display = "block";
+        //~ document.getElementById("modeChange").style.display = "none";
+      });
       
       $('#LED_On').click(function(){ setButton('LED','0'); });
       $('#LED_Off').click(function(){ setButton('LED','1'); });
       $('#RELAY_On').click(function(){ setButton('RELAY','1'); });
       $('#RELAY_Off').click(function(){ setButton('RELAY','0'); });
-      $('#TEST_On').click(function(){ getDeviceName('http://localhost/device_name.txt') });
+      $('#TEST_On').click(function(){ getDeviceName() });
+      $('#setToAPMode').click(function(){ 
+        if ( confirm("Are you sure you want to change into AP mode?") ) {
+          //~ alert("Changing to AP Mode\nOnce restarted, join the AP with:\nSSID = 'ABCD_Smart_Device'\nPassword = user defined");
+          setMode('AP');
+          //~ document.getElementById("tabContents").style.display = "none";
+          //~ document.getElementById("modeChange").style.display = "block";
+        }
+      });
+      
+      $('#newConfigSettings').click(function(){
+        if ( confirm("Are new configuration settings correct?\n" +
+            "This operation will restart your Smart Device!\n" +
+            "Are you sure you want to continue?") ) {
+          //~ alert("ssid:" + $('#ssid').val());
+          setNewConfigValues($('#ssid').val(),$('#pwd').val(),$('#deviceName').val());
+        }
+      });
+
 
       function setButton(id, state){
         $.post("gpio?id=" + id + "&state=" + state).done(function(data){
@@ -188,60 +162,73 @@
       {
         $.post("getDeviceName").done(function(data){
           console.log("Return getDeviceName " + JSON.stringify(data));
-          $("div#device_name h1").html(data.deviceName);
+          $("div#mainAppDiv h1").html(data.deviceName);
         }).fail(function(err){
           console.log("err getDeviceName " + JSON.stringify(err));
         });
       }
-		
-      // Change current theme
-      // Adapted from : https://wdtz.org/bootswatch-theme-selector.html
-      var supports_storage = supports_html5_storage();
-      if (supports_storage) {
-        var theme = localStorage.theme;
-        if ( typeof theme != 'undefined' ) {
-          console.log("Recharge le theme " + theme);
-          set_theme(get_themeUrl(theme));
-        }
+      
+      function showHideConfig(test) {
+        //~ $.post("getMode").done(function(data){
+          //~ consle.log("Return getMode " + JSON.stringify(data));
+          //~ if ( data.mode === "AP" ) {
+          if ( test === "AP" ) {
+            document.getElementById("ap_mode").style.display = "block";
+            document.getElementById("sta_mode").style.display = "none";
+            //~ document.getElementById("tabContents").style.display = "block";
+            //~ document.getElementById("modeChange").style.display = "none";
+          }
+          else {
+            document.getElementById("ap_mode").style.display = "none";
+            document.getElementById("sta_mode").style.display = "block";
+            //~ document.getElementById("tabContents").style.display = "none";
+            //~ document.getElementById("modeChange").style.display = "block";
+          }
+        //~ });
       }
       
-      // New theme selected
-      jQuery(function($){
-        $('body').on('click', '.change-style-menu-item', function() {
-          var theme_name = $(this).attr('rel');
-          console.log("Changement de theme " + theme_name);
-          var theme_url = get_themeUrl(theme_name);
-          console.log("URL theme : " + theme_url);
-          set_theme(theme_url);
+      function setMode(mode) {
+        $.post("setMode?mode=" + mode).done(function(data){
+          console.log("Return setButton " + JSON.stringify(data));
+          if ( data.success === "1" ) {
+            if (mode === "AP") {
+              $("div#mainAppDiv.container-fluid").html("<h2>Device mode changed</h2>" +
+              "<p>Connect to the Access Point using:<br><br>" + 
+              "SSID = 'ABCD_Smart_Device'<br>" + 
+              "Password = User defined<br><br>" +
+              "Via the following link:<br>" + 
+              "<a href=\"http://192.168.4.22\">AP Link</a>");
+            }
+            else {
+              $("div#mainAppDiv.container-fluid").html("<h2>Device mode changed</h2>" +
+              "<p>Connect to the device site over the local network on:<br><br>" + 
+              "SSID = '" + ssid_val + "'<br>" + 
+              "Password = " + pwd_val + "<br><br>" +
+              "Via the following link:<br>" + 
+              "<a href=\"http://192.168.4.22\">AP Link</a>"); // need to update this with maybe a DNS value
+              
+            }
+          }
         });
-      });
-      // Get theme URL
-      function get_themeUrl(theme_name){
-        $('#labelTheme').html("Th&egrave;me : " + theme_name);
-        var url_theme = "";
-        if ( theme_name === "bootstrap" ) {
-          url_theme = "css/bootstrap.min.css";
-        } else {
-          url_theme = "css/" + theme_name + "/bootstrap.min.css";
-        }
-        if (supports_storage) {
-          // Enregistre le theme sélectionné en local - save into the local database the selected theme
-          localStorage.theme = theme_name;
-        }
-        return url_theme;
       }
-      // Apply theme
-      function set_theme(theme_url) {
-        $('link[title="main"]').attr('href', theme_url);
+      
+      function setNewConfigValues(ssid,pwd,deviceName) {
+        $.post("newConfig?ssid=" + ssid + "&pwd=" + pwd + "&deviceName=" + deviceName).done(function(data){
+          console.log("Return setNewConfigValues " + JSON.stringify(data));
+          if ( data.success === "1" ) {
+            ssid_val = ssid;
+            pwd_val = pwd;
+            setMode('STA');
+          }
+          else {
+            setMode('AP');
+          }
+        });
+        //~ ssid_val = ssid;
+        //~ pwd_val = pwd;
+        //~ setMode('STA');
       }
-      // local storage available ?
-      function supports_html5_storage(){
-        try {
-          return 'localStorage' in window && window['localStorage'] !== null;
-        } catch (e) {
-          return false;
-        }
-      }
-	  </script>
+		
+    </script>
   </body>
 </html>

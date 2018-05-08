@@ -70,20 +70,8 @@ void wifi_setup() {
   String wifiMode = f_wifiMode.readStringUntil('\n');
   Serial.print("WIFI Mode: ");
   Serial.println(wifiMode); 
-  if (wifiMode == "AP")
-  {
-    WiFi.mode(WIFI_AP);
-//    delay(100);
-    Serial.print("Setting soft-AP configuration... ");
-    Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
-//    delay(10);
-    Serial.print("Setting soft-AP... ");
-    Serial.println(WiFi.softAP("ABCD_Smart_Device","Password123!") ? "Ready" : "Failed!");
-//    delay(10);
-    Serial.print("Soft-AP IP address = ");
-    Serial.println(WiFi.softAPIP());
-  }
-  else if (wifiMode == "STA")
+
+  if (wifiMode == "STA")
   {
     if (!f_ssid or !f_pwd)
     {
@@ -110,21 +98,51 @@ void wifi_setup() {
       Serial.print("Reading password...");
       String str_password = f_pwd.readStringUntil('\n');
       const char* password = str_password.c_str();
-//      Serial.println(password);
+      Serial.println(Sring(password));
       Serial.print("Reading ssid...");
       String str_ssid = f_ssid.readStringUntil('\n');
       const char* ssid = str_ssid.c_str();
-//      Serial.println(ssid);
+      Serial.println(String(ssid));
     
       WiFi.mode(WIFI_STA);
       WiFi.begin(ssid, password);
+      Serial.print("Connecting");
+      int timeout = 60000;
+      int counter = 0;
       while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
+        counter++;
+        if (counter * 500 >= timeout)
+        {
+          Serial.println("SSID and Password not set - restarting in AP mode...");
+          Serial.println("==== Write to boot_mode.txt file in SPIFF =====");
+          f_wifiMode = SPIFFS.open(fn_wifiMode, "w");
+          f_wifiMode.print("AP");
+          f_wifiMode.close();
+          
+          Serial.println("==== Restarting ESP8266====");
+          ESP.restart();
+          break;
+        }
       }
     }
     Serial.println("");
     Serial.println("WiFi connected");
+  }
+//    if (wifiMode == "AP")
+  else
+  {
+    WiFi.mode(WIFI_AP);
+//    delay(100);
+    Serial.print("Setting soft-AP configuration... ");
+    Serial.println(WiFi.softAPConfig(local_IP, gateway, subnet) ? "Ready" : "Failed!");
+//    delay(10);
+    Serial.print("Setting soft-AP... ");
+    Serial.println(WiFi.softAP("ABCD_Smart_Device","Password123!") ? "Ready" : "Failed!");
+//    delay(10);
+    Serial.print("Soft-AP IP address = ");
+    Serial.println(WiFi.softAPIP());
   }
 }
 
@@ -158,6 +176,8 @@ void startServer() {
   server.serveStatic("/", SPIFFS, "/index_3.html");
   server.on("/gpio", updateGPIO);
   server.on("/getDeviceName", getDeviceName);
+  server.on("/newConfig", newConfig);
+  server.on("/setMode", setMode);
   server.begin();
   Serial.println ( "HTTP server started" );
 }
@@ -203,6 +223,62 @@ void getDeviceName(){
   f_deviceName.close();
 }
 
+// Issue here where values not being correctly recognised and saved into the relevant .txt
+// Try saving values into an array and use println to write data into SPIFFS files??
+void newConfig(){
+  String new_ssid = server.arg("ssid");
+  String new_pwd = server.arg("pwd");
+  String new_device_name = server.arg("deviceName");
+  String success = "1";
+  
+  Serial.println("Changing config settings...");
+  
+  Serial.println("==== Write to ssid.txt file in SPIFF =====");
+  Serial.print("Value: ");
+  Serial.println(String(new_ssid));
+  File f_ssid = SPIFFS.open(fn_ssid, "w");
+  f_ssid.print(String(new_ssid));
+  f_ssid.close();
+  
+  Serial.println("==== Write to password.txt file in SPIFF =====");
+  Serial.print("Value: ");
+  Serial.println(String(new_pwd));
+  File f_pwd = SPIFFS.open(fn_password, "w");
+  f_pwd.print(String(new_pwd));
+  f_pwd.close();
+    
+  Serial.println("==== Write to device_name.txt file in SPIFF =====");
+  Serial.print("Value: ");
+  Serial.println(String(new_device_name));
+  File f_device_name = SPIFFS.open(fn_deviceName, "w");
+  f_device_name.print(String(new_device_name));
+  f_device_name.close();
+    
+  String json = "{\"success\":\"" + String(success) + "\"}";
+  
+  server.send(200, "application/json", json);
+  Serial.println("Config settings updated");
+}
+
+void setMode(){
+  String wifiMode = server.arg("mode");
+  String success = "1";
+  
+  Serial.println("Changing to AP mode...");
+  Serial.println("==== Write to boot_mode.txt file in SPIFF =====");
+  
+  File f_wifiMode = SPIFFS.open(fn_wifiMode, "w");
+  f_wifiMode.print(wifiMode);
+  f_wifiMode.close();
+  
+  String json = "{\"success\":\"" + String(success) + "\"}";
+  
+  server.send(200, "application/json", json);
+  Serial.println("boot_mode.txt updated");
+  
+  Serial.println("==== Restarting ESP8266====");
+  ESP.restart();
+}
 
 void setup() {
   // put your setup code here, to run once:
