@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
+#include <fauxmoESP.h> 
 
 const char* fn_password = "/password.txt";
 const char* fn_ssid = "/ssid.txt";
@@ -18,6 +19,10 @@ IPAddress subnet(255,255,255,0);
 String realSize= String(ESP.getFlashChipRealSize());
 String ideSize = String(ESP.getFlashChipSize());
 bool flashCorrectlyConfigured = realSize.equals(ideSize);
+
+// FauxmoESP
+fauxmoESP fauxmo;
+String fauxmoId;
 
 // Create an instance of the server
 // specify the port to listen on as an argument
@@ -70,14 +75,19 @@ void wifi_setup() {
   String wifiMode = f_wifiMode.readStringUntil('\n');
   Serial.print("WIFI Mode: ");
   Serial.println(wifiMode); 
-
+  String str_ssid = f_ssid.readStringUntil('\n');
+  String str_pwd = f_pwd.readStringUntil('\n');
+  Serial.print("SSID: ");
+  Serial.println(str_ssid);
+  Serial.print("Password: ");
+  Serial.println(str_pwd);
   if (wifiMode == "STA")
   {
     if (!f_ssid or !f_pwd)
     {
       creds_exist = false;
     }
-    else if (f_ssid.readStringUntil('\n').length() == 0 or f_pwd.readStringUntil('\n').length() == 0)
+    else if (str_ssid.length() == 0 or str_pwd.length() == 0)
     {
       creds_exist = false;
     }
@@ -96,14 +106,15 @@ void wifi_setup() {
     else
     {
       Serial.print("Reading password...");
-      String str_password = f_pwd.readStringUntil('\n');
-      const char* password = str_password.c_str();
-      Serial.println(Sring(password));
+//      String str_password = f_pwd.readStringUntil('\n');
+      const char* password = str_pwd.c_str();
+      Serial.println(password);
       Serial.print("Reading ssid...");
-      String str_ssid = f_ssid.readStringUntil('\n');
+//      String str_ssid = f_ssid.readStringUntil('\n');
       const char* ssid = str_ssid.c_str();
       Serial.println(String(ssid));
-    
+      
+      WiFi.mode(WIFI_AP);
       WiFi.mode(WIFI_STA);
       WiFi.begin(ssid, password);
       Serial.print("Connecting");
@@ -129,6 +140,8 @@ void wifi_setup() {
     }
     Serial.println("");
     Serial.println("WiFi connected");
+    Serial.print("Connect using IP: ");
+    Serial.println(WiFi.localIP());
   }
 //    if (wifiMode == "AP")
   else
@@ -174,14 +187,46 @@ void startServer() {
   server.serveStatic("/src", SPIFFS, "/src");
   server.serveStatic("/css", SPIFFS, "/css");
   server.serveStatic("/", SPIFFS, "/index_3.html");
+  server.serveStatic("/data", SPIFFS, "/");
   server.on("/gpio", updateGPIO);
   server.on("/getDeviceName", getDeviceName);
   server.on("/newConfig", newConfig);
   server.on("/setMode", setMode);
+  server.on("/getMode", getMode);
+  server.on("/getConfig", getConfig);
   server.begin();
   Serial.println ( "HTTP server started" );
 }
-
+//
+//void startFauxmo() {
+//  // Fauxmo
+//  File f_deviceName = SPIFFS.open(fn_deviceName, "r");
+//  fauxmoId = f_deviceName.readStringUntil('\n');
+//  f_deviceName.close();
+//  Serial.print("WeMo switch name: ");
+//  Serial.println(fauxmoId);
+//  fauxmo.addDevice(fauxmoId.c_str());
+//  fauxmo.onMessage([](const char * device_name, bool state) {
+//    Serial.printf("New WeMo message for device %s, new state: %s", device_name, state ? "ON" : "OFF");
+//    if (state == 1) {
+//      setSwitchHigh(true);
+//    } else {
+//      setSwitchLow(true);
+//    }
+//  });
+//}
+//
+//void setSwitchHigh(bool publish) {
+//    digitalWrite(SWITCH_PIN, HIGH);
+//
+//    switchState = 1;
+//
+//    Serial.println("Switch: HIGH");
+//
+//    if (publish) {
+//        publishSwitch();
+//    }
+//}
 
 void updateGPIO(){
   String gpio = server.arg("id");
@@ -223,12 +268,38 @@ void getDeviceName(){
   f_deviceName.close();
 }
 
+void getConfig(){
+  File f_ssid = SPIFFS.open(fn_ssid, "r");
+  File f_pwd = SPIFFS.open(fn_password, "r");
+  File f_deviceName = SPIFFS.open(fn_deviceName, "r");
+  String str_ssid = f_ssid.readStringUntil('\n');
+  String str_pwd = f_pwd.readStringUntil('\n');
+  String str_deviceName = f_deviceName.readStringUntil('\n');
+  Serial.print("SSID: ");
+  Serial.println(str_ssid);
+  Serial.print("Password: ");
+  Serial.println(str_pwd);
+  Serial.print("Device Name: ");
+  Serial.println(str_deviceName);
+  String json = "{\"ssid\":\"" + str_ssid + "\"";
+  json += ",\"password\":\"" + str_pwd + "\"";
+  json += ",\"deviceName\":\"" + str_deviceName + "\"}";
+  Serial.println(json);
+  server.send(200, "application/json", json);
+  f_ssid.close();
+  f_pwd.close();
+  f_deviceName.close();
+}
+
 // Issue here where values not being correctly recognised and saved into the relevant .txt
 // Try saving values into an array and use println to write data into SPIFFS files??
 void newConfig(){
-  String new_ssid = server.arg("ssid");
-  String new_pwd = server.arg("pwd");
-  String new_device_name = server.arg("deviceName");
+  String str_ssid = server.arg("ssid");
+  String str_pwd = server.arg("pwd");
+  String str_device_name = server.arg("deviceName");
+  const char* new_ssid = str_ssid.c_str();
+  const char* new_pwd = str_pwd.c_str();
+  const char* new_device_name = str_device_name.c_str();
   String success = "1";
   
   Serial.println("Changing config settings...");
@@ -237,14 +308,14 @@ void newConfig(){
   Serial.print("Value: ");
   Serial.println(String(new_ssid));
   File f_ssid = SPIFFS.open(fn_ssid, "w");
-  f_ssid.print(String(new_ssid));
+  f_ssid.print(new_ssid);
   f_ssid.close();
   
   Serial.println("==== Write to password.txt file in SPIFF =====");
   Serial.print("Value: ");
   Serial.println(String(new_pwd));
   File f_pwd = SPIFFS.open(fn_password, "w");
-  f_pwd.print(String(new_pwd));
+  f_pwd.print(new_pwd);
   f_pwd.close();
     
   Serial.println("==== Write to device_name.txt file in SPIFF =====");
@@ -258,6 +329,14 @@ void newConfig(){
   
   server.send(200, "application/json", json);
   Serial.println("Config settings updated");
+}
+
+void getMode(){
+  File f_wifiMode = SPIFFS.open(fn_wifiMode, "r");
+  String str_wifiMode = f_wifiMode.readStringUntil('\n');
+  String json = "{\"mode\":\"" + str_wifiMode + "\"}";
+  Serial.println(json);
+  server.send(200, "application/json", json);
 }
 
 void setMode(){
@@ -289,6 +368,7 @@ void setup() {
   wifi_setup();
   gpio_setup();
   startServer();
+  startFauxmo;
 
 }
 

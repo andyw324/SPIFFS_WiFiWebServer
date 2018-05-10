@@ -110,6 +110,7 @@
       
       $( document ).ready(function() { 
         getDeviceName();
+        getConfig();
         showHideConfig("AP"); 
         //~ document.getElementById("tabContents").style.display = "block";
         //~ document.getElementById("modeChange").style.display = "none";
@@ -123,7 +124,7 @@
       $('#setToAPMode').click(function(){ 
         if ( confirm("Are you sure you want to change into AP mode?") ) {
           //~ alert("Changing to AP Mode\nOnce restarted, join the AP with:\nSSID = 'ABCD_Smart_Device'\nPassword = user defined");
-          setMode('AP');
+          setMode();
           //~ document.getElementById("tabContents").style.display = "none";
           //~ document.getElementById("modeChange").style.display = "block";
         }
@@ -168,11 +169,23 @@
         });
       }
       
-      function showHideConfig(test) {
-        //~ $.post("getMode").done(function(data){
-          //~ consle.log("Return getMode " + JSON.stringify(data));
-          //~ if ( data.mode === "AP" ) {
-          if ( test === "AP" ) {
+      function getConfig()
+      {
+        $.post("getConfig").done(function(data){
+          console.log("Return getConfig " + JSON.stringify(data));
+          $('#ssid').val(data.ssid);
+          $('#pwd').val(data.password);
+          $('#deviceName').val(data.deviceName);
+        }).fail(function(err){
+          console.log("err getConfig " + JSON.stringify(err));
+        });
+      }
+      
+      function showHideConfig() {
+        $.post("getMode").done(function(data){
+          console.log("Return getMode " + JSON.stringify(data));
+          if ( data.mode === "AP" ) {
+          //~ if ( test === "AP" ) {
             document.getElementById("ap_mode").style.display = "block";
             document.getElementById("sta_mode").style.display = "none";
             //~ document.getElementById("tabContents").style.display = "block";
@@ -184,7 +197,7 @@
             //~ document.getElementById("tabContents").style.display = "none";
             //~ document.getElementById("modeChange").style.display = "block";
           }
-        //~ });
+        });
       }
       
       function setMode(mode) {
