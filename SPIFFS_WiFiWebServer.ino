@@ -1,7 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
-#include <fauxmoESP.h> 
 
 const char* fn_password = "/password.txt";
 const char* fn_ssid = "/ssid.txt";
@@ -16,13 +15,11 @@ IPAddress local_IP(192,168,4,22);
 IPAddress gateway(192,168,4,9);
 IPAddress subnet(255,255,255,0);
 
-String realSize= String(ESP.getFlashChipRealSize());
+String realSize = String(ESP.getFlashChipRealSize());
 String ideSize = String(ESP.getFlashChipSize());
 bool flashCorrectlyConfigured = realSize.equals(ideSize);
-
-// FauxmoESP
-fauxmoESP fauxmo;
-String fauxmoId;
+int relayState = LOW;
+int buttonState = HIGH;
 
 // Create an instance of the server
 // specify the port to listen on as an argument
@@ -34,10 +31,10 @@ void gpio_setup() {
   digitalWrite(ledPin, HIGH);
   
   pinMode(buttonPin, INPUT_PULLUP);
-  digitalWrite(ledPin,HIGH);
+//  digitalWrite(ledPin,HIGH);
   
   pinMode(relayPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
+  digitalWrite(relayPin, LOW);
 }
 
 
@@ -77,10 +74,10 @@ void wifi_setup() {
   Serial.println(wifiMode); 
   String str_ssid = f_ssid.readStringUntil('\n');
   String str_pwd = f_pwd.readStringUntil('\n');
-  Serial.print("SSID: ");
-  Serial.println(str_ssid);
-  Serial.print("Password: ");
-  Serial.println(str_pwd);
+//  Serial.print("SSID: ");
+//  Serial.println(str_ssid);
+//  Serial.print("Password: ");
+//  Serial.println(str_pwd);
   if (wifiMode == "STA")
   {
     if (!f_ssid or !f_pwd)
@@ -108,11 +105,11 @@ void wifi_setup() {
       Serial.print("Reading password...");
 //      String str_password = f_pwd.readStringUntil('\n');
       const char* password = str_pwd.c_str();
-      Serial.println(password);
+//      Serial.println(password);
       Serial.print("Reading ssid...");
 //      String str_ssid = f_ssid.readStringUntil('\n');
       const char* ssid = str_ssid.c_str();
-      Serial.println(String(ssid));
+//      Serial.println(String(ssid));
       
       WiFi.mode(WIFI_AP);
       WiFi.mode(WIFI_STA);
@@ -197,36 +194,20 @@ void startServer() {
   server.begin();
   Serial.println ( "HTTP server started" );
 }
-//
-//void startFauxmo() {
-//  // Fauxmo
-//  File f_deviceName = SPIFFS.open(fn_deviceName, "r");
-//  fauxmoId = f_deviceName.readStringUntil('\n');
-//  f_deviceName.close();
-//  Serial.print("WeMo switch name: ");
-//  Serial.println(fauxmoId);
-//  fauxmo.addDevice(fauxmoId.c_str());
-//  fauxmo.onMessage([](const char * device_name, bool state) {
-//    Serial.printf("New WeMo message for device %s, new state: %s", device_name, state ? "ON" : "OFF");
-//    if (state == 1) {
-//      setSwitchHigh(true);
-//    } else {
-//      setSwitchLow(true);
-//    }
-//  });
-//}
-//
-//void setSwitchHigh(bool publish) {
-//    digitalWrite(SWITCH_PIN, HIGH);
-//
-//    switchState = 1;
-//
-//    Serial.println("Switch: HIGH");
-//
-//    if (publish) {
-//        publishSwitch();
-//    }
-//}
+
+void setRelayStatus(int state) {
+  
+  digitalWrite(relayPin, state);
+  String printText = "Setting relay pin to State: ";
+  relayState = state;
+  if (state == 1) {
+    printText += "HIGH";
+  } else {
+    printText += "LOW";
+  }
+  Serial.println(printText);
+
+}
 
 void updateGPIO(){
   String gpio = server.arg("id");
@@ -237,6 +218,7 @@ void updateGPIO(){
     pin = ledPin;
   } else if ( gpio == "RELAY" ) {
     pin = relayPin;
+    relayState = state.toInt();
   } else {   
     pin = ledPin;
   }
@@ -368,11 +350,22 @@ void setup() {
   wifi_setup();
   gpio_setup();
   startServer();
-  startFauxmo;
 
 }
 
 void loop() {
+  int curButtonState = digitalRead(buttonPin);
+  if (curButtonState != buttonState) {
+    if (curButtonState == LOW) {
+      if (relayState == 1) {
+        setRelayStatus(0);
+      }
+      else {
+        setRelayStatus(1);
+      }
+    }
+  buttonState = curButtonState;
+  }
   server.handleClient();
 }
 
